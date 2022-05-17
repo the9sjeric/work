@@ -1,12 +1,14 @@
 import pandas as pd
 
-source = "考勤.xlsx"
-target = "考勤(最终结果).xlsx"
+source = "hik.xlsx"
+source2 = "dingding.xlsx"
+target = "考勤(hik结果).xlsx"
 
 """选取源文件所需列"""
 df_source = pd.read_excel(source)
 df_target = df_source[["人员姓名", "工号", "事件时间"]].copy()
 df_target = df_target.fillna("空值")
+df_target.info()
 
 """创建表示“年月日”的日期列"""
 df_target.insert(2, "日期", df_target["事件时间"])
@@ -36,8 +38,8 @@ df_4["迟到/旷工\n(小时)"] = ""
 df_4["迟到/旷工\n(分钟)"] = ""
 for i in range(0, len(df_4)):
     amsbsj = pd.to_datetime(f"{df_4.loc[i, '日期']} 09:00:00")
-    amcdsj = pd.to_datetime(f"{df_4.loc[i, '日期']} 09:30:00")
-    amyzcdsj = pd.to_datetime(f"{df_4.loc[i, '日期']} 10:00:00")
+    amwdsj = pd.to_datetime(f"{df_4.loc[i, '日期']} 09:15:00")
+    amcdsj = pd.to_datetime(f"{df_4.loc[i, '日期']} 11:00:00")
     amxbsj = pd.to_datetime(f"{df_4.loc[i, '日期']} 12:00:00")
     pmsbsj = pd.to_datetime(f"{df_4.loc[i, '日期']} 13:00:00")
     pmcdsj = pd.to_datetime(f"{df_4.loc[i, '日期']} 14:00:00")
@@ -47,15 +49,15 @@ for i in range(0, len(df_4)):
     else:
         if df_4.loc[i, "上班打卡"] <= amsbsj:
             df_4.loc[i, "上班考勤情况"] = ""
-        elif amsbsj < df_4.loc[i, "上班打卡"] <= amcdsj:
+        elif amsbsj < df_4.loc[i, "上班打卡"] <= amwdsj:
+            df_4.loc[i, "上班考勤情况"] = "上午晚到"
+            df_4.loc[i, "迟到/旷工\n(小时)"] = round((df_4.loc[i, "上班打卡"] - amsbsj).seconds / 3600, 1)
+            df_4.loc[i, "迟到/旷工\n(分钟)"] = round((df_4.loc[i, "上班打卡"] - amsbsj).seconds / 60, 1)
+        elif amwdsj < df_4.loc[i, "上班打卡"] <= amcdsj:
             df_4.loc[i, "上班考勤情况"] = "上午迟到"
             df_4.loc[i, "迟到/旷工\n(小时)"] = round((df_4.loc[i, "上班打卡"] - amsbsj).seconds / 3600, 1)
             df_4.loc[i, "迟到/旷工\n(分钟)"] = round((df_4.loc[i, "上班打卡"] - amsbsj).seconds / 60, 1)
-        elif amcdsj < df_4.loc[i, "上班打卡"] <= amyzcdsj:
-            df_4.loc[i, "上班考勤情况"] = "上午严重迟到"
-            df_4.loc[i, "迟到/旷工\n(小时)"] = round((df_4.loc[i, "上班打卡"] - amsbsj).seconds / 3600, 1)
-            df_4.loc[i, "迟到/旷工\n(分钟)"] = round((df_4.loc[i, "上班打卡"] - amsbsj).seconds / 60, 1)
-        elif amyzcdsj < df_4.loc[i, "上班打卡"] <= amxbsj:
+        elif amcdsj < df_4.loc[i, "上班打卡"] <= amxbsj:
             df_4.loc[i, "上班考勤情况"] = "上午旷工"
             df_4.loc[i, "迟到/旷工\n(小时)"] = round((df_4.loc[i, "上班打卡"] - amsbsj).seconds / 3600, 1)
             df_4.loc[i, "迟到/旷工\n(分钟)"] = round((df_4.loc[i, "上班打卡"] - amsbsj).seconds / 60, 1)
@@ -84,7 +86,7 @@ for i in range(0, len(df_4)):
     pmkgsj = pd.to_datetime(f"{df_4.loc[i, '日期']} 14:00:00")
     pmsbsj = pd.to_datetime(f"{df_4.loc[i, '日期']} 13:00:00")
     amsbsj = pd.to_datetime(f"{df_4.loc[i, '日期']} 09:00:00")
-    amcdsj = pd.to_datetime(f"{df_4.loc[i, '日期']} 09:30:00")
+    amwdsj = pd.to_datetime(f"{df_4.loc[i, '日期']} 09:30:00")
     amxbsj = pd.to_datetime(f"{df_4.loc[i, '日期']} 12:00:00")
     if df_4.loc[i, "星期"] in [6, 7]:
         df_4.loc[i, "下班考勤情况"] = "周末加班"
