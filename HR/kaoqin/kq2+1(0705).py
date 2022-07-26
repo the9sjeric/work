@@ -6,7 +6,7 @@ target = "考勤(2合1结果).xlsx"
 
 """选取源文件所需列"""
 df_source1 = pd.read_excel(source1)
-df_target1 = df_source1[["人员姓名", "事件时间"]].copy()
+df_target1 = df_source1[["人员姓名", "事件时间", "打卡地址"]].copy()
 df_target1 = df_target1.fillna("空值")
 
 """创建表示“年月日”的日期列(hik)"""
@@ -18,7 +18,7 @@ df_target1.to_excel("target1.xlsx")
 
 """创建表示“年月日”的日期列(dingding)"""
 df_source2 = pd.read_excel(source2)
-df_target2 = df_source2[["姓名", "日期", "打卡时间", "打卡结果"]].copy()
+df_target2 = df_source2[["姓名", "日期", "打卡时间", "打卡结果", "打卡地址"]].copy()
 df_target2 = df_target2.fillna("空值")
 df_target2["666"] = df_target2["日期"].dt.strftime("%Y/%m/%d")
 df_target2["日期"] = df_target2["日期"].dt.strftime("%Y/%m/%d")
@@ -29,8 +29,10 @@ df_target2.rename(columns={'姓名': '人员姓名', '打卡时间': '事件时�
 df_target2.to_excel("target2.xlsx")
 
 df_target3 = df_target2.copy()
+df_target3.to_excel("target3.xlsx")
 df_target3.drop_duplicates(subset=["人员姓名", "日期"], keep='first', inplace=True)
 df_target3 = df_target3.reset_index()
+print(df_target3)
 
 """合并hik和dingding"""
 df_target1 = pd.concat([df_target1, df_target2], join='outer')
@@ -158,6 +160,9 @@ for i in range(0, len(df_4)):
             df_4.loc[i, "加班小时"] = round((df_4.loc[i, "下班打卡"] - pmxbsj).seconds / 3600, 1)
             df_4.loc[i, "加班分钟"] = round((df_4.loc[i, "下班打卡"] - pmxbsj).seconds / 60, 1)
 
+"""添加钉钉打卡地址"""
+df_4["钉钉打卡地址"] = ""
+
 """添加钉钉打卡结果"""
 list_zong = []
 for i in range(0, len(df_target3)):
@@ -165,11 +170,14 @@ for i in range(0, len(df_target3)):
     aaa.append(df_target3.loc[i, "人员姓名"])
     aaa.append(df_target3.loc[i, "日期"])
     aaa.append(df_target3.loc[i, "打卡结果"])
+    aaa.append(df_target3.loc[i, "打卡地址"])
     list_zong.append(aaa)
+print(list_zong)
 for i in range(0, len(df_4)):
     for j in list_zong:
         if df_4.loc[i, "人员姓名"] in j and df_4.loc[i, "日期"] in j and "出差" in j:
             df_4.loc[i, "钉钉打卡结果"] = j[2]
+            df_4.loc[i, "钉钉打卡地址"] = j[3]
 
 """简化上下班打卡时间格式"""
 df_4["上班打卡"] = df_4["上班打卡"].dt.strftime("%H:%M:%S")
